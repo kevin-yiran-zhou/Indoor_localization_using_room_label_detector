@@ -113,11 +113,11 @@ def detect_room_label(image, resize_factor=5, area_threshold=100, approx_toleran
     return the_corners, the_number
 
 
-image = cv2.imread("/home/kevinbee/Desktop/apriltag_indoor_navigation/room_label_detector/images/office.JPG")
+image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office.JPG")
 corners, number = detect_room_label(image, resize_factor=4, area_threshold=500, approx_tolerance=0.05)
 
-image = cv2.imread("/home/kevinbee/Desktop/apriltag_indoor_navigation/room_label_detector/images/office_rotated.JPG")
+image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_rotated.JPG")
 corners, number = detect_room_label(image, resize_factor=4, area_threshold=500, approx_tolerance=0.05)
 
-image = cv2.imread("/home/kevinbee/Desktop/apriltag_indoor_navigation/room_label_detector/images/office_different_angle.JPG")
+image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_different_angle.JPG")
 corners, number = detect_room_label(image, resize_factor=4, area_threshold=500, approx_tolerance=0.05)
