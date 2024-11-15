@@ -54,10 +54,10 @@ def detect_number(image, corners):
     return text, reordered_corners
 
 
-def detect_room_label(image, resize_factor=5, area_threshold=100, approx_tolerance=0.1):
+def detect_room_label_contours(image, resize_factor=5, area_threshold=100, approx_tolerance=0.1):
     start_time = time.time()
     # Resize the image
-    image = cv2.resize(image, (image.shape[1] // resize_factor, image.shape[0] // resize_factor))
+    image = cv2.resize(image, (int(image.shape[1] / resize_factor), int(image.shape[0] / resize_factor)))
     
     # Apply bilateral filter for noise reduction while keeping edges sharp
     filtered_image = cv2.bilateralFilter(image, 15, 80, 80)
@@ -85,6 +85,7 @@ def detect_room_label(image, resize_factor=5, area_threshold=100, approx_toleran
         area = cv2.contourArea(cnt)
         
         if area > area_threshold:
+            # print("Area:", area)
             approx = cv2.approxPolyDP(cnt, approx_tolerance * cv2.arcLength(cnt, True), True)
             if len(approx) == 4:
                 corners = [point[0] for point in approx]
@@ -100,7 +101,7 @@ def detect_room_label(image, resize_factor=5, area_threshold=100, approx_toleran
                     the_number = OCR_result
                 else:
                     cv2.drawContours(image, [approx], -1, (0, 0, 255), 3)
-                    cv2.putText(image, "No valid text", tuple(corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                    cv2.putText(image, "No numbers", tuple(corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     
     print("Time taken:", time.time() - start_time)
     cv2.imshow('Rectangles Detected', image)
@@ -114,10 +115,19 @@ def detect_room_label(image, resize_factor=5, area_threshold=100, approx_toleran
 
 
 image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office.JPG")
-corners, number = detect_room_label(image, resize_factor=4, area_threshold=500, approx_tolerance=0.05)
+corners, number = detect_room_label_contours(image, resize_factor=4, area_threshold=10000, approx_tolerance=0.05)
+
+image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_.JPG")
+corners, number = detect_room_label_contours(image, resize_factor=2.5, area_threshold=10000, approx_tolerance=0.05)
 
 image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_rotated.JPG")
-corners, number = detect_room_label(image, resize_factor=4, area_threshold=500, approx_tolerance=0.05)
+corners, number = detect_room_label_contours(image, resize_factor=4, area_threshold=10000, approx_tolerance=0.05)
+
+image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_rotated_.JPG")
+corners, number = detect_room_label_contours(image, resize_factor=2.5, area_threshold=10000, approx_tolerance=0.05)
 
 image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_different_angle.JPG")
-corners, number = detect_room_label(image, resize_factor=4, area_threshold=500, approx_tolerance=0.05)
+corners, number = detect_room_label_contours(image, resize_factor=4, area_threshold=10000, approx_tolerance=0.05)
+
+image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_different_angle_.JPG")
+corners, number = detect_room_label_contours(image, resize_factor=2.5, area_threshold=10000, approx_tolerance=0.05)
