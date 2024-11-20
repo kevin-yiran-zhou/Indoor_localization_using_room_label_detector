@@ -37,14 +37,24 @@ def detect_number(image, corners):
     matrix = cv2.getPerspectiveTransform(src_points, dst_points)
     warped = cv2.warpPerspective(image, matrix, (int(width), int(height)))
     cv2.imshow('Warped Image', warped)
+    # while cv2.getWindowProperty('Warped Image', cv2.WND_PROP_VISIBLE) >= 1:
+    #     key = cv2.waitKey(1)
+    #     if key == 27:
+    #         break
 
     # OCR
     image = Image.fromarray(warped)
     gray_image = image.convert('L')
     enhancer = ImageEnhance.Contrast(gray_image)
-    enhanced_image = enhancer.enhance(2)
+    enhanced_image = enhancer.enhance(2.8)
     threshold_image = enhanced_image.point(lambda p: p > 75 and 255)
     sharpened_image = threshold_image.filter(ImageFilter.SHARPEN)
+    cv2.imshow('Sharpened Image', np.array(sharpened_image))
+    # while cv2.getWindowProperty('Sharpened Image', cv2.WND_PROP_VISIBLE) >= 1:
+    #     key = cv2.waitKey(1)
+    #     if key == 27:
+    #         break
+
     ## Detect only digits
     # text = pytesseract.image_to_string(sharpened_image, config='--oem 3 --psm 6 outputbase digits')
     # Detect digits and letters
@@ -106,10 +116,11 @@ def detect_room_label_contours(image, resize_factor, area_threshold, approx_tole
             else:
                 cv2.drawContours(image, [approx], -1, (0, 0, 255), 3)
                 cv2.putText(image, "Not rectangle", tuple(approx[0][0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                # pass
 
     print("Time taken:", time.time() - start_time)
-    cv2.imshow('Rectangles Detected', image)
-    while cv2.getWindowProperty('Rectangles Detected', cv2.WND_PROP_VISIBLE) >= 1:
+    cv2.imshow('Detected Room Labels (Contours)', image)
+    while cv2.getWindowProperty('Detected Room Labels (Contours)', cv2.WND_PROP_VISIBLE) >= 1:
         key = cv2.waitKey(1)
         if key == 27:
             break
@@ -157,9 +168,9 @@ def detect_room_label_contours_hsv(image, lower_range, upper_range, resize_facto
                     cv2.drawContours(image, [approx], -1, (0, 0, 255), 3)
                     cv2.putText(image, "No numbers", tuple(corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
             else:
-                # cv2.drawContours(image, [approx], -1, (0, 0, 255), 3)
-                # cv2.putText(image, "Not rectangle", tuple(approx[0][0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-                pass
+                cv2.drawContours(image, [approx], -1, (0, 0, 255), 3)
+                cv2.putText(image, "Not rectangle", tuple(approx[0][0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                # pass
 
     print("Time taken:", time.time() - start_time)
     
@@ -201,17 +212,17 @@ corners, number = detect_room_label_contours_combined(image, lower_range, upper_
 image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office.JPG")
 corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=4, area_threshold=5000, approx_tolerance=0.05)
 
-image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_.JPG")
-corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=2.5, area_threshold=5000, approx_tolerance=0.05)
+# image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_.JPG")
+# corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=2.5, area_threshold=5000, approx_tolerance=0.05)
 
 image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_rotated.JPG")
 corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=4, area_threshold=5000, approx_tolerance=0.05)
 
-image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_rotated_.JPG")
-corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=2.5, area_threshold=5000, approx_tolerance=0.05)
+# image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_rotated_.JPG")
+# corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=2.5, area_threshold=5000, approx_tolerance=0.05)
 
 image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_different_angle.JPG")
 corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=4, area_threshold=5000, approx_tolerance=0.05)
 
-image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_different_angle_.JPG")
-corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=2.5, area_threshold=5000, approx_tolerance=0.05)
+# image = cv2.imread("/home/kevinbee/Desktop/room_label_detector/images/office_different_angle_.JPG")
+# corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=2.5, area_threshold=5000, approx_tolerance=0.05)
