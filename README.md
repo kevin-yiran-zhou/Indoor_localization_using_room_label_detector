@@ -1,4 +1,4 @@
-# Room Label Detectors
+# Indoor Localization Using Room Label Detectors
 
 **Current**: 
 1. Use contour detection or HSV color ranges to find shapes similar to room labels.
