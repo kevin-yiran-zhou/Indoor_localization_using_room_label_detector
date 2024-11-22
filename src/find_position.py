@@ -1,5 +1,5 @@
 import cv2
-from tesseract_detector import detect_room_label_contours_combined
+from room_label_detector import detect_room_label_contours_combined
 
 lower_range=(40/2, 5*2.55, 60*2.55)
 upper_range=(60/2, 20*2.55, 90*2.55)
