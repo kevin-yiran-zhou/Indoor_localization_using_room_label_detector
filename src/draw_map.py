@@ -315,8 +315,8 @@ class FloorplanApp:
         elif self.mode == "add_remove_room_label" and self.temp_room_coords:
             name = simpledialog.askstring("Input", "Room Label Name:")
             if name:
-                length = simpledialog.askinteger("Input", "Room Length (integer):")
-                height = simpledialog.askinteger("Input", "Room Height (integer):")
+                length = simpledialog.askinteger("Input", "Label Length (integer):")
+                height = simpledialog.askinteger("Input", "Label Height (integer):")
                 if (length is not None) and (height is not None):
                     self.room_labels[name] = [*self.temp_room_coords, length, height]
             self.temp_room_coords = None
@@ -453,7 +453,7 @@ class FloorplanApp:
             all_destinations = {}
 
         # Update the destination data for the current floor
-        all_destinations[self.floor_name] = {name: (int(x), int(y), int(theta)) for name, (x, y, theta) in self.destinations.items()}
+        all_destinations[self.floor_name] = {name: (int(x), int(y), theta) for name, (x, y, theta) in self.destinations.items()}
         
         # Write updated destinations back to the file
         with open(dest_file, "w") as f:
