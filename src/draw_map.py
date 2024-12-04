@@ -50,6 +50,9 @@ class FloorplanApp:
 
         self.btn_add_waypoint = tk.Button(control_panel, text="Add/Remove Waypoint", command=lambda: self.set_mode("add_remove_waypoint"))
         self.btn_add_waypoint.pack(pady=5)
+
+        self.btn_add_room_label = tk.Button(control_panel, text="Add/Remove Room Label", command=lambda: self.set_mode("add_remove_room_label"))
+        self.btn_add_room_label.pack(pady=5)
         
         self.btn_reset_walls = tk.Button(control_panel, text="Reset Walls", command=self.reset_walls)
         self.btn_reset_walls.pack(pady=10)
@@ -68,12 +71,14 @@ class FloorplanApp:
         self.rect_start = None
         self.line_start = None
 
-        # Data structures for storing walls, destinations, and waypoints
+        # Data structures for storing walls, destinations, waypoints, and room labels
         self.walls = []
         self.destinations = {}
         self.waypoints = []
-        self.hover_target = None  # Track hovered waypoint or destination
-        self.temp_dest_coords = None  # Temporary destination coordinates
+        self.room_labels = {}
+        self.hover_target = None  # Track hovered waypoint, destination, or room label
+        self.temp_dest_coords = None  # Temporary destination data
+        self.temp_room_coords = None  # Temporary room label data
 
         # Bindings for panning and interactions
         self.canvas.bind("<Button-1>", self.on_click)
@@ -102,6 +107,10 @@ class FloorplanApp:
                 data = json.load(f)
                 self.walls = [(tuple(wall[0]), tuple(wall[1])) for wall in data.get("walls", [])]
                 self.waypoints = [tuple(waypoint) for waypoint in data.get("waypoints", [])]
+                self.room_labels = {
+                    name: [room[0], room[1], room[2], room[3], room[4]]
+                    for name, room in data.get("rooms", {}).items()
+                }
             print(f"Loaded map from {json_file}")
         else:
             # No existing data, perform wall detection
@@ -175,6 +184,27 @@ class FloorplanApp:
         for idx, (x, y) in enumerate(self.waypoints):
             color = (0, 255, 0) if (idx, "waypoint") != self.hover_target else (255, 0, 0)
             cv2.circle(resized_image, (int(x * self.zoom_level), int(y * self.zoom_level)), 5, color, -1)
+        
+        for name, (x, y, orientation, _, _) in self.room_labels.items():
+            color = (255, 120, 0) if (name, "room") != self.hover_target else (255, 0, 0)
+            cv2.circle(resized_image, (int(x * self.zoom_level), int(y * self.zoom_level)), 5, color, -1)
+            cv2.putText(resized_image, name, (int(x * self.zoom_level) + 8, int(y * self.zoom_level) - 8),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA)
+            end_x = x + 20 * math.cos(math.radians(orientation))
+            end_y = y + 20 * math.sin(math.radians(orientation))
+            cv2.arrowedLine(resized_image, (int(x * self.zoom_level), int(y * self.zoom_level)),
+                            (int(end_x * self.zoom_level), int(end_y * self.zoom_level)), color, 2)
+        
+        if self.temp_room_coords:
+            x, y, orientation = self.temp_room_coords
+            temp_color = (0, 255, 255)
+            cv2.circle(resized_image, (int(x * self.zoom_level), int(y * self.zoom_level)), 5, temp_color, -1)
+            cv2.putText(resized_image, "Temp", (int(x * self.zoom_level) + 8, int(y * self.zoom_level) - 8),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, temp_color, 1, cv2.LINE_AA)
+            end_x = x + 20 * math.cos(math.radians(orientation))
+            end_y = y + 20 * math.sin(math.radians(orientation))
+            cv2.arrowedLine(resized_image, (int(x * self.zoom_level), int(y * self.zoom_level)),
+                            (int(end_x * self.zoom_level), int(end_y * self.zoom_level)), temp_color, 2)
 
         img_display = Image.fromarray(resized_image)
         self.display_image = ImageTk.PhotoImage(img_display)
@@ -224,6 +254,14 @@ class FloorplanApp:
             else:
                 self.waypoints.append((x, y))
             self.update_canvas()
+        elif self.mode == "add_remove_room_label":
+            if self.hover_target and self.hover_target[1] == "room":
+                name = self.hover_target[0]
+                if messagebox.askyesno("Delete Room Label", f"Do you want to delete room label '{name}'?"):
+                    del self.room_labels[name]
+            else:
+                self.temp_room_coords = (x, y, 0)  # Start a new room label
+            self.update_canvas()
 
 
     def on_drag(self, event):
@@ -249,6 +287,11 @@ class FloorplanApp:
             angle = math.degrees(math.atan2(event.y - start_y, event.x - start_x))
             self.temp_dest_coords = (start_x, start_y, angle)
             self.update_canvas()
+        elif self.mode == "add_remove_room_label" and self.temp_room_coords:
+            start_x, start_y = self.temp_room_coords[:2]
+            angle = math.degrees(math.atan2(event.y - start_y, event.x - start_x))
+            self.temp_room_coords = (start_x, start_y, angle)  # Update the orientation
+            self.update_canvas()
 
 
     def on_release(self, event):
@@ -269,6 +312,15 @@ class FloorplanApp:
                 self.destinations[name] = self.temp_dest_coords
             self.temp_dest_coords = None
             self.update_canvas()
+        elif self.mode == "add_remove_room_label" and self.temp_room_coords:
+            name = simpledialog.askstring("Input", "Room Label Name:")
+            if name:
+                length = simpledialog.askinteger("Input", "Room Length (integer):")
+                height = simpledialog.askinteger("Input", "Room Height (integer):")
+                if (length is not None) and (height is not None):
+                    self.room_labels[name] = [*self.temp_room_coords, length, height]
+            self.temp_room_coords = None
+            self.update_canvas()
 
 
     def on_mouse_move(self, event):
@@ -285,6 +337,10 @@ class FloorplanApp:
             for idx, (wx, wy) in enumerate(self.waypoints):
                 if abs(wx - x) < 10 and abs(wy - y) < 10:
                     self.hover_target = (idx, "waypoint")
+                    break
+            for name, (rx, ry, _, _, _) in self.room_labels.items():
+                if abs(rx - x) < 10 and abs(ry - y) < 10:
+                    self.hover_target = (name, "room")
                     break
 
         self.update_canvas()
@@ -375,7 +431,11 @@ class FloorplanApp:
         data = {
             # "destinations": {name: (int(x), int(y)) for name, (x, y) in self.destinations.items()},
             "waypoints": [(int(x), int(y)) for x, y in self.waypoints],
-            "walls": [[(int(start[0]), int(start[1])), (int(end[0]), int(end[1]))] for start, end in self.walls]
+            "walls": [[(int(start[0]), int(start[1])), (int(end[0]), int(end[1]))] for start, end in self.walls],
+            "rooms": {
+                name: [int(x), int(y), orientation, length, height]
+                for name, (x, y, orientation, length, height) in self.room_labels.items()
+            }
         }
 
         # Save to the specific floor's JSON file
@@ -393,7 +453,7 @@ class FloorplanApp:
             all_destinations = {}
 
         # Update the destination data for the current floor
-        all_destinations[self.floor_name] = {name: (int(x), int(y)) for name, (x, y) in self.destinations.items()}
+        all_destinations[self.floor_name] = {name: (int(x), int(y), int(theta)) for name, (x, y, theta) in self.destinations.items()}
         
         # Write updated destinations back to the file
         with open(dest_file, "w") as f:
