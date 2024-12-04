@@ -1,5 +1,6 @@
 from localization import localization_with_room_label
 from room_label_detector import detect_room_label_contours_combined
+from calculate_pose_pnp import calculate_pose
 import cv2
 import json
 import os
@@ -53,6 +54,10 @@ print("scale:", scale)
 print("Available Room Numbers:", room_labels.keys())
 
 print("====================================")
-x, y, theta = localization_with_room_label(corners, number, room_labels, scale)
-print("Camera Position (m):", x, y)
-print("Camera Orientation (degrees):", theta)
+pose = calculate_pose(corners, number, room_labels, camera_matrix, dist_coeffs, scale)
+if pose:
+    x, y, theta = pose
+    print("Camera Position (pixel on floorplan):", x, y)
+    print("Camera Orientation (degrees):", theta)
+else:
+    print("Localization failed.")

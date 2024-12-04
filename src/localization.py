@@ -47,8 +47,8 @@ def localization_with_room_label(corners, number, room_labels_library, camera_ma
     yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])  # Yaw in radians
 
     # Convert translation vector (tvec) to global coordinates
-    camera_x = x_label + (tvec[0][0] * scale)
-    camera_y = y_label + (tvec[1][0] * scale)
+    camera_x = x_label + (tvec[0][0] / scale)
+    camera_y = y_label + (tvec[1][0] / scale)
     camera_yaw = np.degrees(yaw) + theta_label
 
     return [camera_x, camera_y, camera_yaw]
