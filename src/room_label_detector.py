@@ -205,5 +205,6 @@ def detect_room_label_contours_combined(image, lower_range, upper_range, resize_
             print("Numbers detected using detect_room_label_contours_hsv.")
     else:
         print("Numbers detected using detect_room_label_contours.")
+    print("Number:", number)
     print("====================================")
     return corners, number
