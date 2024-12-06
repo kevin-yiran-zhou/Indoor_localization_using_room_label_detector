@@ -54,7 +54,7 @@ print("scale:", scale)
 print("Available Room Numbers:", room_labels.keys())
 
 print("====================================")
-pose = calculate_pose(corners, number, room_labels, camera_matrix, dist_coeffs, scale)
+pose = calculate_pose()
 if pose:
     x, y, theta = pose
     print("Camera Position (pixel on floorplan):", x, y)

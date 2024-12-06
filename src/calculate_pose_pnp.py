@@ -3,7 +3,7 @@ import cv2
 
 # Function to extract the pose of the label using solvePnP
 def pnp(corners, camera_matrix, dist_coeffs, length, height):
-    # Define the 3D object points for the AprilTag in the tag's coordinate frame
+    # Define the 3D object points for the room label in the tag's coordinate frame
     object_points = np.array([
         [-length / 2, -height / 2, 0],  # Bottom-left
         [ length / 2, -height / 2, 0],  # Bottom-right
