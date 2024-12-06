@@ -76,6 +76,7 @@ class FloorplanApp:
         self.destinations = {}
         self.waypoints = []
         self.room_labels = {}
+        self.scale = None
         self.hover_target = None  # Track hovered waypoint, destination, or room label
         self.temp_dest_coords = None  # Temporary destination data
         self.temp_room_coords = None  # Temporary room label data
@@ -111,6 +112,7 @@ class FloorplanApp:
                     name: [room[0], room[1], room[2], room[3], room[4]]
                     for name, room in data.get("rooms", {}).items()
                 }
+                self.scale = data.get("scale", 1)
             print(f"Loaded map from {json_file}")
         else:
             # No existing data, perform wall detection
@@ -315,8 +317,8 @@ class FloorplanApp:
         elif self.mode == "add_remove_room_label" and self.temp_room_coords:
             name = simpledialog.askstring("Input", "Room Label Name:")
             if name:
-                length = simpledialog.askinteger("Input", "Label Length (integer):")
-                height = simpledialog.askinteger("Input", "Label Height (integer):")
+                length = simpledialog.askinteger("Input", "Label Length in centimeter (integer):")
+                height = simpledialog.askinteger("Input", "Label Height in centimeter (integer):")
                 if (length is not None) and (height is not None):
                     self.room_labels[name] = [*self.temp_room_coords, length, height]
             self.temp_room_coords = None
@@ -415,9 +417,11 @@ class FloorplanApp:
 
 
     def finish(self):
-        if not self.walls and not self.destinations and not self.waypoints:
+        if not self.walls and not self.destinations and not self.waypoints and not self.room_labels:
             messagebox.showwarning("Nothing to Save", "No data to save.")
             return
+        
+        scale = float(simpledialog.askstring("Input", "Scale (meters per pixel):"))
 
         # Ensure the maps directory exists
         maps_dir = os.path.join(self.data_path, "maps")
@@ -430,12 +434,13 @@ class FloorplanApp:
         # Format data for JSON serialization
         data = {
             # "destinations": {name: (int(x), int(y)) for name, (x, y) in self.destinations.items()},
+            "scale": scale,
             "waypoints": [(int(x), int(y)) for x, y in self.waypoints],
-            "walls": [[(int(start[0]), int(start[1])), (int(end[0]), int(end[1]))] for start, end in self.walls],
             "rooms": {
                 name: [int(x), int(y), orientation, length, height]
                 for name, (x, y, orientation, length, height) in self.room_labels.items()
-            }
+            },
+            "walls": [[(int(start[0]), int(start[1])), (int(end[0]), int(end[1]))] for start, end in self.walls],
         }
 
         # Save to the specific floor's JSON file
