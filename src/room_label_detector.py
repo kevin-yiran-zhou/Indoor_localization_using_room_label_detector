@@ -145,6 +145,16 @@ def detect_room_label_contours_hsv(image, lower_range, upper_range, resize_facto
     
     # Create a mask for the HSV range
     mask = cv2.inRange(hsv_image, lower_range, upper_range)
+
+    if show_result:
+        # Show the mask (binary image)
+        cv2.imshow("Mask", mask)
+        # Wait for user interaction to close the windows
+        while cv2.getWindowProperty('Mask', cv2.WND_PROP_VISIBLE) >= 1:
+            key = cv2.waitKey(1)
+            if key == 27:
+                break
+        cv2.destroyAllWindows()
     
     # Find contours in the mask
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
