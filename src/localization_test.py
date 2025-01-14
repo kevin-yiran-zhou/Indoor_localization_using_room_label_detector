@@ -13,13 +13,32 @@ lower_range = tuple(hsv_colors["gray"]["lower"])
 upper_range = tuple(hsv_colors["gray"]["upper"])
 
 
-org_image_width = 4031
-org_image_height = 3023
-resize_factor = 4
+# iPhone 12 Pro Max camera parameters
+# org_image_width = 4031
+# org_image_height = 3023
+# resize_factor = 4
+# resize = 1/resize_factor
+# image_width = int(org_image_width * resize)
+# image_height = int(org_image_height * resize)
+# # camera_focal_length = Equivalent focal length * Sensor width / Image width
+# # Main camera focal length: 26mm, sensor width: 7.03mm
+# camera_focal_length = 26 * image_width / 7.03
+# c_x = round(image_width / 2)
+# c_y = round(image_height / 2)
+# camera_matrix = np.array([[camera_focal_length, 0, c_x],
+#                         [0, camera_focal_length, c_y],
+#                         [0, 0, 1]])
+# dist_coeffs = np.zeros((1, 5))
+
+# iPhone 16 Max camera parameters
+org_image_width = 5712
+org_image_height = 4284
+resize_factor = 1
 resize = 1/resize_factor
 image_width = int(org_image_width * resize)
 image_height = int(org_image_height * resize)
-camera_focal_length = 26 * image_width / 7.03
+# Main camera focal length: 24mm, sensor width: 7.03mm
+camera_focal_length = 24 * image_width / 7.03
 c_x = round(image_width / 2)
 c_y = round(image_height / 2)
 camera_matrix = np.array([[camera_focal_length, 0, c_x],
@@ -29,7 +48,8 @@ dist_coeffs = np.zeros((1, 5))
 
 
 # Test the function
-image = cv2.imread("/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/office_dark.JPG")
+# image = cv2.imread("/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/office_dark.JPG") # iPhone 12 Pro Max
+image = cv2.imread("/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/test/1_60.JPG")
 corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=4, area_threshold=5000, approx_tolerance=0.05, show_result=False)
 
 floor_data_path = "/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/data/maps/basic-floor-plan.json"
