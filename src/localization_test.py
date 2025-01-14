@@ -50,7 +50,7 @@ dist_coeffs = np.zeros((1, 5))
 # Test the function
 # image = cv2.imread("/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/office_dark.JPG") # iPhone 12 Pro Max
 image = cv2.imread("/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/test/1_60.JPG")
-corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=4, area_threshold=5000, approx_tolerance=0.05, show_result=False)
+corners, number = detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor=1, area_threshold=50000, approx_tolerance=0.05, show_result=False)
 
 floor_data_path = "/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/data/maps/basic-floor-plan.json"
 with open(floor_data_path, 'r') as file:
