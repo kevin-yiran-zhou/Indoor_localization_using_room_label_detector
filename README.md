@@ -11,7 +11,7 @@
 - **Draw Map**: A GUI tool for developers to create and modify the floorplan.
     - **Add/Remove Walls**: Define navigable and restricted areas.
     - **Set Destinations and Waypoints**: Place destinations with orientation, aiding in directional guidance.
-    - **TODO: Set Room Labels**: Define size of room labels and place them in floor with orientation. 
+    - **Set Room Labels**: Define size of room labels and place them in floor with orientation. 
     - This tool generates JSON-based map files, used by the pathfinding component.
 
 **Potential alternatives**: 
