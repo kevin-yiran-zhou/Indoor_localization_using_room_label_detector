@@ -12,7 +12,7 @@ lower_range2 = tuple(hsv_colors["gray2"]["lower"])
 upper_range2 = tuple(hsv_colors["gray2"]["upper"])
 
 folder_path = "/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/test/resized"
-for i in range(1, 12):
+for i in range(1, 9):
     file_name = f"{i}.jpg"
     file_path = os.path.join(folder_path, file_name)
     image = cv2.imread(file_path)
@@ -21,8 +21,8 @@ for i in range(1, 12):
         lower_range2, 
         upper_range2, 
         resize_factor=1, 
-        area_threshold=5000, 
-        approx_tolerance=0.05, 
+        area_threshold=3000, 
+        approx_tolerance=0.025, 
         show_result=True
     )
 
