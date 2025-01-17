@@ -22,7 +22,7 @@ for i in range(1, 9):
         upper_range2, 
         resize_factor=1, 
         area_threshold=3000, 
-        approx_tolerance=0.025, 
+        approx_tolerance=0.03, 
         show_result=True
     )
 
