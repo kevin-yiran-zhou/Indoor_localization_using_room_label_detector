@@ -11,7 +11,7 @@ upper_range1 = tuple(hsv_colors["gray1"]["upper"])
 lower_range2 = tuple(hsv_colors["gray2"]["lower"])
 upper_range2 = tuple(hsv_colors["gray2"]["upper"])
 
-folder_path = "/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/test/resized"
+folder_path = "/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/014-190/resized"
 for i in range(1, 9):
     file_name = f"{i}.jpg"
     file_path = os.path.join(folder_path, file_name)
