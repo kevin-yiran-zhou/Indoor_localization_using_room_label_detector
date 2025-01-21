@@ -56,15 +56,20 @@ def calculate_pose(room_labels_library, detected_label_number, detected_label_co
         print("No room labels detected.")
         return
     
-    for i in range(len(detected_label_number)):
+    target_room_number = None
+    finished = False
+    i = 0
+    while not finished and i < len(detected_label_number):
         number = detected_label_number[i]
         for real_room_number in room_labels_library.keys():
             if real_room_number in number:
+                finished = True
+                target_room_number = real_room_number
                 break
-        break
+        i += 1
 
-    print("Final detected room number:", real_room_number)
-    corners = detected_label_corners[i]
+    print("Final detected room number:", target_room_number)
+    corners = detected_label_corners[i - 1]
     print("Detected corners:", corners)
     [label_x, label_y, label_theta, label_length, label_height] = room_labels_library[real_room_number]
 

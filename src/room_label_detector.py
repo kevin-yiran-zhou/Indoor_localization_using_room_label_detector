@@ -205,7 +205,8 @@ def detect_room_label_contours_hsv(image, lower_range, upper_range, resize_facto
 
 
 def detect_room_label_contours_combined(image, lower_range, upper_range, resize_factor, area_threshold, approx_tolerance, show_result):
-    corners, number = detect_room_label_contours(image, resize_factor, area_threshold, approx_tolerance, show_result)
+    # corners, number = detect_room_label_contours(image, resize_factor, area_threshold, approx_tolerance, show_result)
+    corners, number = [], []
     if len(number) == 0:
         print("No numbers detected using detect_room_label_contours. Trying detect_room_label_contours_hsv.")
         corners, number = detect_room_label_contours_hsv(image, lower_range, upper_range, resize_factor, area_threshold, approx_tolerance, show_result)
