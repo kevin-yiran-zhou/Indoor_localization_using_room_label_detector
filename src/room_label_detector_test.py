@@ -12,7 +12,7 @@ lower_range2 = tuple(hsv_colors["gray2"]["lower"])
 upper_range2 = tuple(hsv_colors["gray2"]["upper"])
 
 folder_path = "/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/014-188/origin"
-for i in [8]:
+for i in range(1, 11):
     file_name = f"{i}.JPG"
     file_path = os.path.join(folder_path, file_name)
     image = cv2.imread(file_path)

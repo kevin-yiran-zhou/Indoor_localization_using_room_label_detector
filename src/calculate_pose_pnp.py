@@ -1,8 +1,19 @@
 import numpy as np
 import cv2
 
+def reorder_corners(corners):
+    top_right, top_left, bottom_left, bottom_right = corners
+    points = np.array([top_right, top_left, bottom_left, bottom_right])
+    y_sorted = points[np.argsort(points[:, 1])]
+    top_points = y_sorted[:2]
+    bottom_points = y_sorted[2:]
+    top_left, top_right = top_points[np.argsort(top_points[:, 0])]
+    bottom_left, bottom_right = bottom_points[np.argsort(bottom_points[:, 0])]
+    return np.array([bottom_left, bottom_right, top_right, top_left], dtype=np.float32)
+
 # Function to extract the pose of the label using solvePnP
-def pnp(corners, camera_matrix, dist_coeffs, length, height):
+def pnp(reordered_corners, camera_matrix, dist_coeffs, length, height):
+    image_points = reordered_corners
     # Define the 3D object points for the room label in the label's coordinate frame
     object_points = np.array([
         [-length/100/2, -height/100/2, 0],  # Bottom-left
@@ -10,12 +21,6 @@ def pnp(corners, camera_matrix, dist_coeffs, length, height):
         [ length/100/2,  height/100/2, 0],  # Top-right
         [-length/100/2,  height/100/2, 0]   # Top-left
     ], dtype=np.float32)
-
-    # Convert pixel corner points to numpy array for solvePnP
-    if isinstance(corners, list) and len(corners) == 1:
-        corners = corners[0]
-    corners = [corners[i] for i in [3, 2, 1, 0]]  # Reorder to match object_points
-    image_points = np.array(corners, dtype=np.float32)
     
     # Use cv2.solvePnP to calculate rotation and translation vectors
     success, rvec, tvec = cv2.solvePnP(object_points, image_points, camera_matrix, dist_coeffs)
@@ -67,14 +72,18 @@ def calculate_pose(room_labels_library, detected_label_number, detected_label_co
                 target_room_number = real_room_number
                 break
         i += 1
+    if not finished:
+        print("No matching room label found.")
+        return
 
     print("Final detected room number:", target_room_number)
     corners = detected_label_corners[i - 1]
-    print("Detected corners:", corners)
+    reordered_corners = reorder_corners(corners)
+    print("Detected corners:", reordered_corners)
     [label_x, label_y, label_theta, label_length, label_height] = room_labels_library[real_room_number]
 
     # Calculate translation and rotation using solvePnP
-    rvec, tvec, success = pnp(corners, camera_matrix, dist_coeffs, label_length, label_height)
+    rvec, tvec, success = pnp(reordered_corners, camera_matrix, dist_coeffs, label_length, label_height)
     if not success:
         print(f"Failed to calculate pose for room label '{detected_label_number}'.")
         return None

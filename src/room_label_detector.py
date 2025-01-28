@@ -4,7 +4,6 @@ import pytesseract
 from PIL import Image, ImageEnhance, ImageFilter
 import time
 
-
 def reorder_corners(corners):
     top_right, top_left, bottom_left, bottom_right = corners
     points = np.array([top_right, top_left, bottom_left, bottom_right])
@@ -37,7 +36,9 @@ def detect_number(image, corners, show_result):
     matrix = cv2.getPerspectiveTransform(src_points, dst_points)
     warped = cv2.warpPerspective(image, matrix, (int(width), int(height)))
     if show_result:
-        cv2.imshow('Warped Image', warped)
+        pass
+        # cv2.namedWindow('Warped Image', cv2.WINDOW_NORMAL)
+        # cv2.imshow('Warped Image', warped)
         # while cv2.getWindowProperty('Warped Image', cv2.WND_PROP_VISIBLE) >= 1:
         #     key = cv2.waitKey(1)
         #     if key == 27:
@@ -51,7 +52,8 @@ def detect_number(image, corners, show_result):
     threshold_image = enhanced_image.point(lambda p: p > 75 and 255)
     sharpened_image = threshold_image.filter(ImageFilter.SHARPEN)
     if show_result:
-        cv2.imshow('Sharpened Image', np.array(sharpened_image))
+        pass
+        # cv2.imshow('Sharpened Image', np.array(sharpened_image))
         # while cv2.getWindowProperty('Sharpened Image', cv2.WND_PROP_VISIBLE) >= 1:
         #     key = cv2.waitKey(1)
         #     if key == 27:
@@ -125,6 +127,7 @@ def detect_room_label_contours(image, resize_factor, area_threshold, approx_tole
 
     print("Time taken:", time.time() - start_time)
     if show_result:
+        cv2.namedWindow('Detected Room Labels (Contours)', cv2.WINDOW_NORMAL)
         cv2.imshow('Detected Room Labels (Contours)', image)
         while cv2.getWindowProperty('Detected Room Labels (Contours)', cv2.WND_PROP_VISIBLE) >= 1:
             key = cv2.waitKey(1)
@@ -148,6 +151,7 @@ def detect_room_label_contours_hsv(image, lower_range, upper_range, resize_facto
 
     if show_result:
         # Show the mask (binary image)
+        cv2.namedWindow('Mask', cv2.WINDOW_NORMAL)
         cv2.imshow("Mask", mask)
         # Wait for user interaction to close the windows
         while cv2.getWindowProperty('Mask', cv2.WND_PROP_VISIBLE) >= 1:
@@ -178,23 +182,24 @@ def detect_room_label_contours_hsv(image, lower_range, upper_range, resize_facto
                 # if len(OCR_result) >= 4:
                     if show_result:
                         cv2.drawContours(image, [approx], -1, (0, 255, 0), 3)
-                        cv2.putText(image, OCR_result, tuple(corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                        cv2.putText(image, OCR_result, tuple(corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 6)
                     result_corners.append(reordered_corners)
                     result_texts.append(OCR_result)
                 else:
                     if show_result:
                         cv2.drawContours(image, [approx], -1, (0, 0, 255), 3)
-                        cv2.putText(image, "No numbers", tuple(corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                        cv2.putText(image, "No numbers", tuple(corners[0]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 6)
             else:
                 if show_result:
                     cv2.drawContours(image, [approx], -1, (0, 0, 255), 3)
-                    cv2.putText(image, "Not rectangle", tuple(approx[0][0]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                    cv2.putText(image, "Not rectangle", tuple(approx[0][0]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 6)
                     # pass
 
     print("Time taken:", time.time() - start_time)
     
     # Display the processed image
     if show_result:
+        cv2.namedWindow('Detected Room Labels (HSV)', cv2.WINDOW_NORMAL)
         cv2.imshow("Detected Room Labels (HSV)", image)
         while cv2.getWindowProperty('Detected Room Labels (HSV)', cv2.WND_PROP_VISIBLE) >= 1:
             key = cv2.waitKey(1)
@@ -208,7 +213,7 @@ def detect_room_label_contours_combined(image, lower_range, upper_range, resize_
     # corners, number = detect_room_label_contours(image, resize_factor, area_threshold, approx_tolerance, show_result)
     corners, number = [], []
     if len(number) == 0:
-        print("No numbers detected using detect_room_label_contours. Trying detect_room_label_contours_hsv.")
+        # print("No numbers detected using detect_room_label_contours. Trying detect_room_label_contours_hsv.")
         corners, number = detect_room_label_contours_hsv(image, lower_range, upper_range, resize_factor, area_threshold, approx_tolerance, show_result)
         if len(number) == 0:
             print("No numbers detected using both detect_room_label_contours either. Returning empty result.")
