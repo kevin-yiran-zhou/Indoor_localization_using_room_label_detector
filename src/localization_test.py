@@ -50,7 +50,7 @@ dist_coeffs = np.zeros((1, 5))
 
 
 # Test the function
-image = cv2.imread("/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/014-188/origin/2.JPG")
+image = cv2.imread("/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/images/014-188/origin/1.JPG")
 corners, number = detect_room_label_contours_combined(image, lower_range2, upper_range2, resize_factor=resize_factor, area_threshold=2000, approx_tolerance=0.05, show_result=False)
 
 floor_data_path = "/home/kevinbee/Desktop/Indoor_localization_using_room_label_detector/data/maps/basic-floor-plan.json"
