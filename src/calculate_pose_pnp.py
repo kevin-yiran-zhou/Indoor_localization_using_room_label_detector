@@ -10,8 +10,7 @@ def reorder_corners(corners):
     bottom_points = y_sorted[2:]
     top_left, top_right = top_points[np.argsort(top_points[:, 0])]
     bottom_left, bottom_right = bottom_points[np.argsort(bottom_points[:, 0])]
-    return np.array([bottom_left, bottom_right, top_right, top_left], dtype=np.float32)
-    # return np.array([top_right, top_left, bottom_left, bottom_right], dtype=np.float32)
+    return np.array([top_right, top_left, bottom_left, bottom_right], dtype=np.float32)
 
 
 def find_room(room_labels_library, detected_label_number, detected_label_corners):
@@ -50,15 +49,16 @@ def pnp(reordered_corners, camera_matrix, dist_coeffs, length, height):
     image_points = reordered_corners
 
     # Corrected object points (label in XZ-plane)
+    # top_right, top_left, bottom_left, bottom_right
     object_points = np.array([
-        [-length/200, -height/200, 0],  # Bottom-left
-        [ length/200, -height/200, 0],  # Bottom-right
-        [ length/200,  height/200, 0],  # Top-right
-        [-length/200,  height/200, 0]   # Top-left
+        [ length/200,  height/200, 0],
+        [-length/200,  height/200, 0],
+        [-length/200, -height/200, 0],
+        [ length/200, -height/200, 0]
     ], dtype=np.float32)
     
     # Use cv2.solvePnP to calculate rotation and translation vectors
-    success, rvec, tvec = cv2.solvePnP(object_points, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_IPPE_SQUARE)
+    success, rvec, tvec = cv2.solvePnP(object_points, image_points, camera_matrix, dist_coeffs)
     
     if not success:
         return None, None, False
@@ -66,27 +66,27 @@ def pnp(reordered_corners, camera_matrix, dist_coeffs, length, height):
     return rvec, tvec, True
 
 
-# Function to convert the rotation vector (rvec) to Euler angles
-def rvec_to_euler_angles(rvec):
-    # Convert the rotation vector to a rotation matrix
-    rotation_matrix, _ = cv2.Rodrigues(rvec)
-    print("Rotation Matrix:")
-    print(rotation_matrix)
+# # Function to convert the rotation vector (rvec) to Euler angles
+# def rvec_to_euler_angles(rvec):
+#     # Convert the rotation vector to a rotation matrix
+#     rotation_matrix, _ = cv2.Rodrigues(rvec)
+#     print("Rotation Matrix:")
+#     print(rotation_matrix)
     
-    # Extract roll, pitch, and yaw from the rotation matrix
-    sy = np.sqrt(rotation_matrix[0, 0]**2 + rotation_matrix[1, 0]**2)
-    singular = sy < 1e-6
+#     # Extract roll, pitch, and yaw from the rotation matrix
+#     sy = np.sqrt(rotation_matrix[0, 0]**2 + rotation_matrix[1, 0]**2)
+#     singular = sy < 1e-6
 
-    if not singular:
-        roll = np.arctan2(rotation_matrix[2, 1], rotation_matrix[2, 2])
-        pitch = np.arctan2(-rotation_matrix[2, 0], sy)
-        yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
-    else:
-        roll = np.arctan2(-rotation_matrix[1, 2], rotation_matrix[1, 1])
-        pitch = np.arctan2(-rotation_matrix[2, 0], sy)
-        yaw = 0
+#     if not singular:
+#         roll = np.arctan2(rotation_matrix[2, 1], rotation_matrix[2, 2])
+#         pitch = np.arctan2(-rotation_matrix[2, 0], sy)
+#         yaw = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
+#     else:
+#         roll = np.arctan2(-rotation_matrix[1, 2], rotation_matrix[1, 1])
+#         pitch = np.arctan2(-rotation_matrix[2, 0], sy)
+#         yaw = 0
 
-    return np.degrees(roll), np.degrees(pitch), np.degrees(yaw)
+#     return np.degrees(roll), np.degrees(pitch), np.degrees(yaw)
 
 
 # Main function to calculate the pose (translation, yaw, pitch, roll) using solvePnP for room labels
@@ -100,8 +100,12 @@ def calculate_pose(room_labels_library, detected_label_number, detected_label_co
         return None
 
     # Convert rotation vector to Euler angles (yaw, pitch, roll)
-    roll, pitch, yaw = rvec_to_euler_angles(rvec)
-    print(f"Roll: {roll:.2f} degrees, Pitch: {pitch:.2f} degrees, Yaw: {yaw:.2f} degrees")
+    Rt, _ = cv2.Rodrigues(rvec)
+    R = Rt.transpose()
+    roll = np.arctan2(-R[2][1], R[2][2])
+    pitch = np.arcsin(R[2][0])
+    yaw = np.arctan2(-R[1][0], R[0][0])
+    print(f"Roll: {np.degrees(roll):.2f} degrees, Pitch: {np.degrees(pitch):.2f} degrees, Yaw: {np.degrees(yaw):.2f} degrees")
 
     # Calculate the distance to the label
     tvec_resized = tvec * resize
