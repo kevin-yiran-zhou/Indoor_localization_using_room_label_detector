@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import math
 from scipy.spatial.transform import Rotation as R
 
 # Function to reorder the corners of the detected label
@@ -52,16 +53,18 @@ def calculate_pose(room_labels_library, detected_label_number, detected_label_co
 
     # Calculate translation and rotation using solvePnP
     image_points = reordered_corners
-    # Corrected object points (label in XZ-plane) bottom_left, top_left, bottom_right, top_right
+    # Object points: bottom_left, top_left, bottom_right, top_right
     object_points = np.array([
-        [-label_length/200, -label_height/200, 0],
         [-label_length/200,  label_height/200, 0],
-        [ label_length/200, -label_height/200, 0],
-        [ label_length/200,  label_height/200, 0]
+        [-label_length/200, -label_height/200, 0],
+        [ label_length/200,  label_height/200, 0],
+        [ label_length/200, -label_height/200, 0]
     ], dtype=np.float32)
-    print("image_points:", image_points)
-    print("object_points:", object_points)
-    success, rvec, tvec = cv2.solvePnP(object_points, image_points, camera_matrix, dist_coeffs)
+    object_points[:, 2] *= -1
+    # print("image_points:", image_points)
+    # print("object_points:", object_points)
+    success, rvec, tvec = cv2.solvePnP(object_points, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_AP3P)
+
     if not success:
         print(f"Failed to calculate pose for room label '{detected_label_number}'.")
         return None
@@ -69,18 +72,24 @@ def calculate_pose(room_labels_library, detected_label_number, detected_label_co
     # Convert the rotation vector to Euler angles
     # https://stackoverflow.com/questions/16265714/camera-pose-estimation-opencv-pnp 
     Rt, _ = cv2.Rodrigues(rvec)
-    R = Rt.T
-    roll = np.arctan2(-R[2][1], R[2][2])
-    pitch = np.arcsin(R[2][0])
-    yaw = np.arctan2(-R[1][0], R[0][0])
+    # print("Rt:")
+    # print(Rt)
+    
+    roll = np.arctan2(-Rt[2][1], Rt[2][2])
+    pitch = np.arcsin(Rt[2][0])
+    yaw = np.arctan2(-Rt[1][0], Rt[0][0])
     print(f"Roll: {np.degrees(roll):.2f} degrees, Pitch: {np.degrees(pitch):.2f} degrees, Yaw: {np.degrees(yaw):.2f} degrees")
 
     # Calculate the distance to the label
+    print("tvec: ")
     print(tvec)
-    tvec_resized = tvec * resize
-    t_x = tvec_resized[0][0]
-    t_y = tvec_resized[1][0]
-    t_z = tvec_resized[2][0]
+    tvec_resized = tvec
+    # t_x = tvec_resized[0][0]
+    # t_y = tvec_resized[1][0]
+    # t_z = tvec_resized[2][0]
+    t_x = tvec[0][0]
+    t_y = tvec[1][0]
+    t_z = tvec[2][0]
     print(f"Translation: ({t_x:.2f}, {t_y:.2f}, {t_z:.2f}) meters")
     print("======================================")
     distance = np.sqrt(t_x**2 + t_z**2) # ignore t_y since it's the height difference
@@ -91,7 +100,7 @@ def calculate_pose(room_labels_library, detected_label_number, detected_label_co
     print(f"Y Distance: {y_distance:.2f} meters")
 
     # Calculate the angle of the tag from the camera
-    horizontal_angle_rad = np.arctan2(t_x, t_z)
+    horizontal_angle_rad = np.arctan2(t_z, t_x)
     horizontal_angle_deg = np.degrees(horizontal_angle_rad)
     print(f"Horizontal Angle: {horizontal_angle_deg:.2f} degrees")
 
